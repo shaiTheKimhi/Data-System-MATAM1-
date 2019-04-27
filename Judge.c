@@ -51,6 +51,16 @@ int getJudgeScore(Judge judge, int stateId)
 	return 0;
 }
 
+bool judgeFindState(Judge j, int stateId)
+{
+	for (int i = 0; i < POINTS_LEN; i++)
+	{
+		if (j->points[i] == stateId)
+			return true;
+	}
+	return false;
+}
+
 int getJudgeId(Judge j)
 {
 	return j->id;
