@@ -21,8 +21,8 @@ Eurovision eurovisionCreate()
 	Eurovision eur = (Eurovision)malloc(sizeof(eurovision_t));
 	if (!eur)
 		return NULL;
-	eur->countries = listCreate(copyCountry, freeCountry);
-	eur->judges = listCreate(copyJudge, freeJudge);
+	eur->countries = listCreate(&copyCountry, &freeCountry);
+	eur->judges = listCreate(&copyJudge, &freeJudge);
 	return eur;
 }
 
@@ -75,6 +75,14 @@ EurovisionResult eurovisionAddState(Eurovision eurovision, int stateId ,const ch
 	setSongName(s, songName);
 	listInsertLast(eurovision->countries, s);
 	return EUROVISION_SUCCESS;
+}
+
+char* copyString(char* string)
+{
+	int len = strlen(string);
+	char* new_string = (char*)malloc(sizeof(char) * len);
+	strcpy(new_string, string);
+	return new_string;
 }
 
 bool judgeExists(Eurovision e, int judgeId)
@@ -283,7 +291,7 @@ Country getStateById(Eurovision eur, int stateId)
 }
 List getStates(Eurovision eur, int* ids, int len)
 {
-	List states = listCreate(copyCountry, freeCountry);
+	List states = listCreate(&copyString, &free);
 	for (int i = len - 1; i >= 0; i--)
 	{
 		listInsertLast(states, getStateName(getStateId(eur, ids[i])));
@@ -302,7 +310,8 @@ List eurovisionRunContest(Eurovision eurovision, int audiencePercent)
 	initStatesArrays(eurovision, ids, points, audiencePercent);
 
 	sortStates(ids, points, len);
-
+	free(ids);
+	free(points);
 	return getStates(eurovision, ids, len);
 }
 
@@ -310,25 +319,54 @@ List eurovisionRunAudienceFavorite(Eurovision eurovision)
 {
 	return eurovisionRunContest(eurovision, FULL_PERCENT);
 }
-void putString(char* string, )
 
 char** initFriendlyArray(Eurovision eur)
 {
 	int len = listGetSize(eur->countries), count = 0;
-	char** friendsArray = (char**)malloc(sizeof(char*) * len);
+	char** friends_array = (char**)malloc(sizeof(char*) * len), *name;
 	Country s = listGetFirst(eur->countries), temp;
 	while (s)
 	{
 		temp = getStateById(eur, countryGetFriendlyState(s));
-		friendsArray[count] = getStateName(s);
+		name = getStateName(s);
+		friends_array[count] = (char*)malloc(sizeof(char) * strlen(name));
+		//might switch sides
+		strcpy(friends_array[count], name);
 		//put state-friend at friends array
-		friendsArray[count++] = getStateName(temp);
+		strcat(friends_array[count], "-");
+		strcat(friends_array[count++],getStateName(temp));
 		s = listGetNext(eur->countries);
 	}
-	return friendsArray
+	return friends_array;
+}
+void sortFriendlyArray(char** friends_array, int len)
+{
+	char* temp_string;
+	for (int i = 0; i < len - 1; i++)
+	{
+		for (int j = 0; j < len - i - 1; j++)
+		{
+			if (strcmp(friends_array[j], friends_array[j + 1]) > 0)
+			{
+				temp_string = friends_array[j + 1];
+				friends_array[j + 1] = friends_array[j];
+				friends_array[j] = temp_string;
+			}
+		}
+	}
 }
 
 List eurovisionRunGetFriendlyStates(Eurovision eurovision)
 {
-	char** friendsArray = initFriendlyArray(eurovision);
+	int len = listGetSize(eurovision->countries);
+	char** friends_array = initFriendlyArray(eurovision);
+	List friends_list = listCreate(&copyString, &free);
+	sortFriendlyArray(friends_array, len);
+	for (int i = len - 1; i >= 0; i++)
+	{
+		listInsertLast(friends_list, friends_array[i]);
+		free(friends_array[i]);
+	}
+	free(friends_array);
+	return friends_list;
 }

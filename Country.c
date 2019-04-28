@@ -112,7 +112,7 @@ void countrySortScores(Country country)
 	{
 		for (int j = 0; j < len - i - 1; j++)
 		{
-			if (getSumOfVote(country->votes[i]) > getSumOfVote(country->votes[i + 1]))
+			if (getSumOfVote(country->votes[j]) > getSumOfVote(country->votes[j + 1]))
 			{
 				temp = country->votes[i + 1];
 				country->votes[i + 1] = country->votes[i];
@@ -153,7 +153,9 @@ char* getStateName(Country c)
 }
 char* getSongName(Country c)
 {
-	return c->songname;
+	char* s = (char*)malloc(strlen(c->songname) + 1);
+	strcpy(s, c->songname);
+	return s;
 }
 void setStateId(Country c, int id)
 {

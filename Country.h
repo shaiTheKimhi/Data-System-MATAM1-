@@ -22,6 +22,7 @@ void removeCountryFromVotes(Country voter, int remove_id);
 void CountryAddVote(Country c, int vote);
 void countryRemoveVote(Country voter, int stateId);
 int countryGetScore(Country voter, int stateId);
+int countryGetFriendlyState(Country c);
 
 int getStateId(Country c);
 char* getStateName(Country c);
