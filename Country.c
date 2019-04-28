@@ -135,6 +135,11 @@ int countryGetScore(Country voter, int stateId)
 	}
 }
 
+int countryGetFriendlyState(Country c)
+{
+	countrySortScores(c);
+	return getIdOfVote(c->votes[c->votes_length - 1]);
+}
 
 int getStateId(Country c)
 {
@@ -142,7 +147,9 @@ int getStateId(Country c)
 }
 char* getStateName(Country c)
 {
-	return c->name;
+	char* s = (char*)malloc(strlen(c->name) + 1);
+	strcpy(s, c->name);
+	return s;
 }
 char* getSongName(Country c)
 {

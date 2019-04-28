@@ -286,7 +286,7 @@ List getStates(Eurovision eur, int* ids, int len)
 	List states = listCreate(copyCountry, freeCountry);
 	for (int i = len - 1; i >= 0; i--)
 	{
-		listInsertLast(states, getStateById(eur, ids[i]));
+		listInsertLast(states, getStateName(getStateId(eur, ids[i])));
 	}
 	return states;
 }
@@ -310,4 +310,25 @@ List eurovisionRunAudienceFavorite(Eurovision eurovision)
 {
 	return eurovisionRunContest(eurovision, FULL_PERCENT);
 }
+void putString(char* string, )
 
+char** initFriendlyArray(Eurovision eur)
+{
+	int len = listGetSize(eur->countries), count = 0;
+	char** friendsArray = (char**)malloc(sizeof(char*) * len);
+	Country s = listGetFirst(eur->countries), temp;
+	while (s)
+	{
+		temp = getStateById(eur, countryGetFriendlyState(s));
+		friendsArray[count] = getStateName(s);
+		//put state-friend at friends array
+		friendsArray[count++] = getStateName(temp);
+		s = listGetNext(eur->countries);
+	}
+	return friendsArray
+}
+
+List eurovisionRunGetFriendlyStates(Eurovision eurovision)
+{
+	char** friendsArray = initFriendlyArray(eurovision);
+}
