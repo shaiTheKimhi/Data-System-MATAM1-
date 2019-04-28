@@ -16,6 +16,7 @@ struct judge_t {
 Judge copyJudge(Judge judge);
 void freeJudge(Judge judge);
 int getJudgeScore(Judge judge, int stateId);
+bool judgeFindState(Judge j, int stateId);
 
 int getJudgeId(Judge j);
 char* getJudgeName(Judge j);

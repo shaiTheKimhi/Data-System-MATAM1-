@@ -110,7 +110,7 @@ void countrySortScores(Country country)
 	int len = country->votes_length, temp;
 	for (int i = 0; i < len - 1; i++)
 	{
-		for (int j = i; j < len - 1; j++)
+		for (int j = 0; j < len - i - 1; j++)
 		{
 			if (getSumOfVote(country->votes[i]) > getSumOfVote(country->votes[i + 1]))
 			{

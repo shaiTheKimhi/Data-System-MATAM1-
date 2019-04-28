@@ -7,6 +7,8 @@
 #include"list.h"
 
 #define POINTS_LEN 10
+#define FULL_PERCENT 100
+#define TWO 2
 
 struct eurovision_t {
 	List countries;
@@ -205,5 +207,107 @@ EurovisionResult eurovisionRemoveVote(Eurovision eurovision, int stateGiver, int
 		s = listGetNext(eurovision->countries);
 	}
 	return EUROVISION_SUCCESS;
+}
+
+float scoreStates(Eurovision eur, int stateId)
+{
+	float sum = 0;
+	Country s = listGetFirst(eur->countries);
+	while (s)
+	{
+		sum += countryGetScore(s, stateId);
+		s = listGetNext(eur->countries);
+	}
+	return sum / listGetSize(eur->countries);
+}
+float scoreJudges(Eurovision eur, int stateId)
+{
+	float sum = 0;
+	Judge j = listGetFirst(eur->judges);
+	while (j)
+	{
+		sum += getJudgeScore(j, stateId);
+		j = listGetNext(eur->judges);
+	}
+	return sum / listGetSize(eur->judges);
+}
+
+float calculateScore(float aud, float jug, int audiencePercent)
+{
+	int aPer = aud * audiencePercent;
+	int jPer = jug * (FULL_PERCENT - audiencePercent);
+	return (aPer + jPer) / TWO * FULL_PERCENT;
+}
+
+void initStatesArrays(Eurovision eur, int* ids, float* points, int audiencePercent)//ids is id array and points is points array
+{
+	int count = 0;
+	Country s = listGetFirst(eur->countries);
+	while (s)
+	{
+		ids[count] = s->id;
+		points[count] = calculateScore(scoreStates(eur, s->id), 
+			scoreJudges(eur, s->id), audiencePercent);
+		s = listGetNext(eur->countries);
+	}
+}
+void sortStates(int* ids, int* points, int len)//ids is id array and points is points array
+{
+	int temp;
+	for (int i = 0; i < len - 1; i++)
+	{
+		for (int j = 0; j < len - i - 1; i++)
+		{
+			if (points[j] > points[j + 1])
+			{
+				temp = points[j + 1];
+				points[j + 1] = points[j];
+				points[j] = temp;
+
+				temp = ids[j + 1];
+				ids[j + 1] = ids[j];
+				ids[j] = temp;
+			}
+		}
+	}
+}
+Country getStateById(Eurovision eur, int stateId)
+{
+	Country s = listGetFirst(eur->countries);
+	while (s)
+	{
+		if (s->id == stateId)
+			return s;
+		s = listGetNext(eur->countries);
+	}
+}
+List getStates(Eurovision eur, int* ids, int len)
+{
+	List states = listCreate(copyCountry, freeCountry);
+	for (int i = len - 1; i >= 0; i--)
+	{
+		listInsertLast(states, getStateById(eur, ids[i]));
+	}
+	return states;
+}
+
+List eurovisionRunContest(Eurovision eurovision, int audiencePercent)
+{
+	int* ids, len = listGetSize(eurovision->countries);
+	float* points;//parr represents points arr
+	
+	ids = (int*)malloc(sizeof(int) * len);
+	points = (float*)malloc(sizeof(float) * len);
+
+	initStatesArrays(eurovision, ids, points, audiencePercent);
+
+	sortStates(ids, points, len);
+
+	return getStates(eurovision, ids, len);
+}
+
+List eurovisionRunAudienceFavorite(Eurovision eurovision)
+{
+	return eurovisionRunContest(eurovision, FULL_PERCENT);
 }
 
