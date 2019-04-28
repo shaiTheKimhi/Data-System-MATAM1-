@@ -190,5 +190,20 @@ EurovisionResult eurovisionAddVote(Eurovision eurovision, int stateGiver, int st
 
 EurovisionResult eurovisionRemoveVote(Eurovision eurovision, int stateGiver, int stateTaker)
 {
-
+	if (stateGiver < 0 || stateTaker < 0)
+		return EUROVISION_INVALID_ID;
+	if (!stateExist(eurovision, stateGiver) || !stateExist(eurovision, stateTaker))
+		return EUROVISION_STATE_NOT_EXIST;
+	if (stateGiver == stateTaker)
+		return EUROVISION_SAME_STATE;
+	
+	Country s = listGetFirst(eurovision->countries);
+	while (s)
+	{
+		if (s->id == stateGiver)
+			countryRemoveVote(s, stateTaker);
+		s = listGetNext(eurovision->countries);
+	}
+	return EUROVISION_SUCCESS;
 }
+
