@@ -1,5 +1,5 @@
-#include<cstdlib>//replace with stdlib.h
-#include<cstring>//replace to string.h
+#include<stdlib.h>//replace with stdlib.h
+#include<string.h>//replace to string.h
 
 #include"Country.h"
 #include"list.h"
@@ -124,8 +124,8 @@ void countrySortScores(Country country)
 
 int countryGetScore(Country voter, int stateId)
 {
-	int len = voter->votes_length, 
-		scores[S_SIZE] = { S_12, S_10, S_8, S_7, S_6, S_5, S_4, 
+	int len = voter->votes_length,
+		scores[S_SIZE] = { S_12, S_10, S_8, S_7, S_6, S_5, S_4,
 		S_3, S_2, S_1 };
 	countrySortScores(voter);
 	for (int i = len - 1; i > len - 12 && i >= 0; i--)
@@ -133,6 +133,7 @@ int countryGetScore(Country voter, int stateId)
 		if (getIdOfVote(voter->votes[i]) == stateId)
 			return scores[len - 1 - i];
 	}
+	return 0;
 }
 
 int countryGetFriendlyState(Country c)

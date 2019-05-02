@@ -1,5 +1,5 @@
-#include<cstdlib>
-#include<cstring>
+#include<stdlib.h>
+#include<string.h>
 
 #include"Judge.h"
 #include"list.h"
@@ -29,6 +29,7 @@ Judge copyJudge(Judge judge)
 	{
 		j->points[i] = judge->points[i];
 	}
+	return j;
 }
 
 void freeJudge(Judge judge)

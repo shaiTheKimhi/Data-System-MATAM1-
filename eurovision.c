@@ -1,5 +1,5 @@
-#include<cstring>
-#include<cstdlib>
+#include<string.h>
+#include<stdlib.h>
 
 #include"eurovision.h"
 #include"Country.h"
@@ -21,8 +21,10 @@ Eurovision eurovisionCreate()
 	Eurovision eur = (Eurovision)malloc(sizeof(eurovision_t));
 	if (!eur)
 		return NULL;
-	eur->countries = listCreate(&copyCountry, &freeCountry);
-	eur->judges = listCreate(&copyJudge, &freeJudge);
+	eur->countries = listCreate((CopyListElement)copyCountry,
+                             (FreeListElement)freeCountry);
+	eur->judges = listCreate((CopyListElement)copyJudge,
+                          (FreeListElement)freeJudge);
 	return eur;
 }
 
@@ -34,7 +36,7 @@ void eurovisionDestroy(Eurovision eurovision)
 	listClear(eurovision->judges);
 	free(eurovision);
 }
-bool validName(char* name)
+bool validName(const char* name)
 {
 	int i = 0;
 	while (name[i])
@@ -50,14 +52,14 @@ bool stateExist(Eurovision e, int stateId)
 	Country s = listGetFirst(e->countries);
 	while (s)
 	{
-		if (s->id == stateId)
+		if (s->id == (unsigned)stateId)
 			return true;
 		s = listGetNext(e->countries);
 	}
 	return false;
 }
 
-EurovisionResult eurovisionAddState(Eurovision eurovision, int stateId ,const char* stateName, 
+EurovisionResult eurovisionAddState(Eurovision eurovision, int stateId ,const char* stateName,
 	const char* songName)
 {
 	if (stateId < 0)
@@ -90,7 +92,7 @@ bool judgeExists(Eurovision e, int judgeId)
 	Judge j = listGetFirst(e->judges);
 	while (j)
 	{
-		if (j->id == judgeId)
+		if (j->id == (unsigned)judgeId)
 			return true;
 		j = listGetNext(e->judges);
 	}
@@ -126,7 +128,7 @@ EurovisionResult eurovisionAddJudge(Eurovision eurovision, int judgeId,
 	setJudgePoints(j, judgeResults);
 	listInsertLast(eurovision->judges, j);
 	return EUROVISION_SUCCESS;
-	
+
 }
 
 void removeStateFromStates(Eurovision e, int stateId)
@@ -134,7 +136,7 @@ void removeStateFromStates(Eurovision e, int stateId)
 	Country s = listGetFirst(e->countries);
 	while (s)
 	{
-		removeCountryFromVotes(e, stateId);
+		removeCountryFromVotes(s, stateId);
 		s = listGetNext(e->countries);
 	}
 }
@@ -172,7 +174,7 @@ EurovisionResult eurovisionRemoveJudge(Eurovision eurovision, int judgeId)
 	Judge j = listGetFirst(eurovision->judges);
 	while (j)
 	{
-		if (j->id == judgeId)
+		if (j->id == (unsigned)judgeId)
 			freeJudge(j);
 		j = listGetNext(eurovision->judges);
 	}
@@ -191,7 +193,7 @@ EurovisionResult eurovisionAddVote(Eurovision eurovision, int stateGiver, int st
 	Country s = listGetFirst(eurovision->countries);
 	while (s)
 	{
-		if (s->id == stateGiver)
+		if (s->id == (unsigned)stateGiver)
 			CountryAddVote(s, stateTaker);
 		s = listGetNext(eurovision->countries);
 	}
@@ -206,11 +208,11 @@ EurovisionResult eurovisionRemoveVote(Eurovision eurovision, int stateGiver, int
 		return EUROVISION_STATE_NOT_EXIST;
 	if (stateGiver == stateTaker)
 		return EUROVISION_SAME_STATE;
-	
+
 	Country s = listGetFirst(eurovision->countries);
 	while (s)
 	{
-		if (s->id == stateGiver)
+		if (s->id == (unsigned)stateGiver)
 			countryRemoveVote(s, stateTaker);
 		s = listGetNext(eurovision->countries);
 	}
@@ -254,12 +256,12 @@ void initStatesArrays(Eurovision eur, int* ids, float* points, int audiencePerce
 	while (s)
 	{
 		ids[count] = s->id;
-		points[count] = calculateScore(scoreStates(eur, s->id), 
+		points[count] = calculateScore(scoreStates(eur, s->id),
 			scoreJudges(eur, s->id), audiencePercent);
 		s = listGetNext(eur->countries);
 	}
 }
-void sortStates(int* ids, int* points, int len)//ids is id array and points is points array
+void sortStates(int* ids, float* points, int len)//ids is id array and points is points array
 {
 	int temp;
 	for (int i = 0; i < len - 1; i++)
@@ -284,17 +286,19 @@ Country getStateById(Eurovision eur, int stateId)
 	Country s = listGetFirst(eur->countries);
 	while (s)
 	{
-		if (s->id == stateId)
+		if (s->id == (unsigned)stateId)
 			return s;
 		s = listGetNext(eur->countries);
 	}
+	return s;
 }
 List getStates(Eurovision eur, int* ids, int len)
 {
-	List states = listCreate(&copyString, &free);
+	List states = listCreate((CopyListElement)copyString,
+                          (FreeListElement)free);
 	for (int i = len - 1; i >= 0; i--)
 	{
-		listInsertLast(states, getStateName(getStateId(eur, ids[i])));
+		listInsertLast(states, getStateName(getStateById(eur, ids[i])));
 	}
 	return states;
 }
@@ -303,7 +307,7 @@ List eurovisionRunContest(Eurovision eurovision, int audiencePercent)
 {
 	int* ids, len = listGetSize(eurovision->countries);
 	float* points;//parr represents points arr
-	
+
 	ids = (int*)malloc(sizeof(int) * len);
 	points = (float*)malloc(sizeof(float) * len);
 
@@ -360,7 +364,8 @@ List eurovisionRunGetFriendlyStates(Eurovision eurovision)
 {
 	int len = listGetSize(eurovision->countries);
 	char** friends_array = initFriendlyArray(eurovision);
-	List friends_list = listCreate(&copyString, &free);
+	List friends_list = listCreate((CopyListElement)copyString,
+                                (FreeListElement)free);
 	sortFriendlyArray(friends_array, len);
 	for (int i = len - 1; i >= 0; i++)
 	{
